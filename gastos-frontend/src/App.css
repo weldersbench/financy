@@ -1,0 +1,215 @@
+/* src/App.css - VERSÃO ATUALIZADA PARA LAYOUT */
+
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f7f6;
+  color: #333;
+  margin: 0;
+  padding: 0; /* Remove padding do body para usar 100% */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%; /* Garante que o body use a largura total */
+}
+
+h1 {
+  color: #2c3e50;
+  text-align: center;
+  margin: 20px 0;
+  width: 100%;
+}
+
+/* Novo estilo para o layout principal em blocos */
+.main-layout-container {
+  display: flex; /* Habilita Flexbox */
+  flex-wrap: wrap; /* Permite que os itens quebrem para a próxima linha em telas menores */
+  justify-content: center; /* Centraliza os itens horizontalmente */
+  gap: 20px; /* Espaçamento entre os blocos */
+  padding: 20px; /* Padding geral para o conteúdo */
+  width: 100%;
+  max-width: 1200px; /* Largura máxima para o layout principal */
+  box-sizing: border-box;
+}
+
+/* Estilo para cada bloco de conteúdo (form, report, list) */
+.content-block {
+  background-color: #fff;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  flex: 1; /* Permite que os blocos cresçam e diminuam */
+  min-width: 300px; /* Largura mínima para evitar que fiquem muito estreitos */
+}
+
+.gasto-list-block { /* Estilo específico para a lista, que pode ocupar mais espaço */
+  flex-basis: 100%; /* Ocupa a largura total da linha quando a tela for maior */
+  margin-top: 20px;
+}
+
+
+h2 {
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Estilo para formulários (já existe, apenas reafirmo) */
+form div {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  background-color: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+form label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #555;
+}
+
+form input[type="text"],
+form input[type="datetime-local"],
+form select,
+form textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 1rem;
+}
+
+form button {
+  background-color: #3498db;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-right: 10px;
+  transition: background-color 0.2s ease;
+}
+
+form button:hover {
+  background-color: #2980b9;
+}
+
+form button[type="button"] {
+  background-color: #e74c3c;
+}
+
+form button[type="button"]:hover {
+  background-color: #c0392b;
+}
+
+
+/* Estilo para a lista de gastos */
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  background-color: #ecf0f1;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+}
+
+li button {
+  background-color: #f39c12;
+  color: white;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  margin-left: 8px;
+  transition: background-color 0.2s ease;
+}
+
+li button:hover {
+  background-color: #e67e22;
+}
+
+li button:last-child {
+  background-color: #e74c3c;
+}
+
+li button:last-child:hover {
+  background-color: #c0392b;
+}
+
+hr {
+  border: 0;
+  height: 1px;
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0));
+  margin: 30px 0;
+  width: 100%;
+  max-width: 600px; /* Mantém a hr mais estreita */
+}
+
+/* src/App.css - NOVO CSS para navegação */
+
+.tab-navigation {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 600px; /* Alinha com a largura dos blocos */
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Garante que bordas fiquem arredondadas */
+}
+
+.tab-navigation button {
+  flex: 1; /* Faz os botões dividirem o espaço igualmente */
+  padding: 12px 20px;
+  border: none;
+  background-color: #f0f0f0;
+  color: #555;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: bold;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  border-radius: 0; /* Remove borda arredondada individual */
+}
+
+.tab-navigation button:not(:last-child) {
+    border-right: 1px solid #ddd; /* Separador entre botões */
+}
+
+.tab-navigation button:hover {
+  background-color: #e0e0e0;
+}
+
+.tab-navigation button.active-tab {
+  background-color: #3498db; /* Cor de destaque para a aba ativa */
+  color: white;
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.2); /* Sombra interna para destaque */
+}
+
+.tab-navigation button.active-tab:hover {
+  background-color: #2980b9;
+}
+
+/* src/App.css - NOVO CSS para FinancialSummary */
+
+/* Ajusta o espaçamento de p em .content-block para o resumo financeiro */
+.content-block p {
+    margin-bottom: 5px; /* Espaçamento menor entre parágrafos de resumo */
+}
+.content-block p:last-child {
+    margin-bottom: 0;
+}

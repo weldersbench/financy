@@ -1,0 +1,8 @@
+/**CRIAR UM PROJETO REACT COM VITE**/
+npm create vite@latest gastos-frontend -- --template react
+
+/**INSTALANDO O NPM**/
+npm install
+
+/**INICIANDO O SERVIDOR WEB**/
+npm run dev
