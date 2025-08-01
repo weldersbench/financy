@@ -14,21 +14,25 @@ import java.util.Optional;
 @RequestMapping("/api/meta_financeira")
 public class MetaFinanceiraController {
 
+    // Persistencia e injeção de dependencias
     @Autowired
     private MetaFinanceiraRepository metaFinanceiraRepository;
 
+    // Criar uma nova meta
     @PostMapping
     public ResponseEntity<MetaFinanceira> criarMeta(@RequestBody MetaFinanceira meta){
         MetaFinanceira novaMeta = metaFinanceiraRepository.save(meta);
         return new ResponseEntity<>(novaMeta, HttpStatus.CREATED);
     }
 
+    // Buscar todas as metas
     @GetMapping
     public ResponseEntity<List<MetaFinanceira>> listarTodasMetas(){
         List<MetaFinanceira> listaMetas = metaFinanceiraRepository.findAll();
         return new ResponseEntity<>(listaMetas, HttpStatus.OK);
     }
 
+    // Buscar por uma meta especifica
     @GetMapping("/{id}")
     public ResponseEntity<MetaFinanceira> listarMetaPorId(@PathVariable Long id){
         Optional<MetaFinanceira> meta = metaFinanceiraRepository.findById(id);
@@ -36,6 +40,7 @@ public class MetaFinanceiraController {
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    // Atualizar uma meta
     @PutMapping("/{id}")
     public ResponseEntity<MetaFinanceira> atualizarMeta(@PathVariable Long id, @RequestBody MetaFinanceira metaAtualizada){
         return metaFinanceiraRepository.findById(id)
@@ -51,6 +56,8 @@ public class MetaFinanceiraController {
                 })
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
+
+    // Deletar uma meta
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletaMeta(@PathVariable Long id){
         if (metaFinanceiraRepository.existsById(id)){
