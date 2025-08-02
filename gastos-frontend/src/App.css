@@ -213,3 +213,93 @@ hr {
 .content-block p:last-child {
     margin-bottom: 0;
 }
+
+/* src/App.css - Estilos para o Modal */
+
+.modal-overlay {
+  position: fixed; /* Fixa o modal na tela */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Fundo semi-transparente */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Garante que fique acima de outros elementos */
+}
+
+.modal-dialog {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  width: 90%;
+  max-width: 650px;
+  overflow: hidden; /* Garante que o conteúdo não vaze */
+}
+
+.modal-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #2c3e50;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #555;
+  cursor: pointer;
+  line-height: 1; /* Alinhamento vertical do 'x' */
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+/* src/App.css - NOVO CSS para os itens da lista de Metas */
+
+/* Remove estilos de botão antigos do <li> para evitar conflito */
+li button {
+  /* Mantém apenas estilos base de botão, se necessário */
+  background: #f39c12;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+/* Ajustes para os botões de Editar/Excluir específicos de MetaList */
+ul li > div:last-child > button {
+  margin-left: 5px;
+  padding: 5px 8px;
+  font-size: 0.8rem;
+  background-color: #f39c12;
+}
+
+ul li > div:last-child > button:hover {
+  background-color: #e67e22;
+}
+
+ul li > div:last-child > button:last-child {
+  background-color: #e74c3c;
+}
+
+ul li > div:last-child > button:last-child:hover {
+  background-color: #c0392b;
+}
+
+/* Remove o estilo antigo de botões da lista */
+ul li button {
+  /* Substituído pelo CSS acima */
+}
