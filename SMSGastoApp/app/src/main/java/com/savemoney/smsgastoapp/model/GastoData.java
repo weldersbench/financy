@@ -6,15 +6,15 @@ import java.time.LocalDateTime;
 public class GastoData {
 
     private BigDecimal valor;
-    private LocalDateTime horaData;
+    private LocalDateTime dataHora;
     private String estabelecimento;
     private String categoria;
     private String remetenteSms;
     private String smsOriginal;
 
-    public GastoData(BigDecimal valor, LocalDateTime horaData, String estabelecimento, String categoria, String remetenteSms, String smsOriginal) {
+    public GastoData(BigDecimal valor, LocalDateTime dataHora, String estabelecimento, String categoria, String remetenteSms, String smsOriginal) {
         this.valor = valor;
-        this.horaData = horaData;
+        this.dataHora = dataHora;
         this.estabelecimento = estabelecimento;
         this.categoria = categoria;
         this.remetenteSms = remetenteSms;
@@ -30,11 +30,11 @@ public class GastoData {
     }
 
     public LocalDateTime getDataHora() {
-        return horaData;
+        return dataHora;
     }
 
-    public void setDataHora(LocalDateTime horaData) {
-        this.horaData = horaData;
+    public void setDataHora(LocalDateTime dataHora) {
+        this.dataHora = dataHora;
     }
 
     public String getEstabelecimento() {
