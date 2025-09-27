@@ -1,5 +1,5 @@
 // src/App.jsx
-import React, { useState, useEffect, useRef } from 'react'; // < -- React Hooks
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import GastoList from './components/GastoList';
 import GastoForm from './components/GastoForm';
@@ -13,7 +13,7 @@ import MetaDetail from './components/MetaDetail';
 import Modal from './components/Modal';
 
 function App() {
-  const [gastos, setGastos] = useState([]); // < -- setGastos armazena na variavel gastos que é o estado atual
+  const [gastos, setGastos] = useState([]);
   const [receitas, setReceitas] = useState([]);
   const [metas, setMetas] = useState([]);
   const [loading, setLoading] = useState(true);
