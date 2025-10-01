@@ -13,6 +13,7 @@ import com.fatboyindustrial.gsonjavatime.LocalDateTimeConverter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.savemoney.smsgastoapp.model.GastoData;
+import com.savemoney.smsgastoapp.service.HttpService;
 import com.savemoney.smsgastoapp.util.SmsParserUtil;
 
 import java.io.IOException;
@@ -29,44 +30,56 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-
+/*
+Ouvinte de SMS
+*/
 public class SmsReceiver extends BroadcastReceiver {
 
     private static final String TAG = "SmsReceiver"; // Para logs
-    private static final String BACKEND_URL = "http://10.0.2.2:8080/api/gastos";
-    private final OkHttpClient httpClient = new OkHttpClient();
-    private final Gson gson = new GsonBuilder()
-            .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeConverter()).create();
 
+    // Recebe os dados do SMS
     @Override
     public void onReceive(Context context, Intent intent) {
+        // Intent identifica a chegada do SMS
         if ("android.provider.Telephony.SMS_RECEIVED".equals(intent.getAction())) {
+            /*O Intent (o sinal de evento) traz consigo um objeto Bundle.
+              Pense no Bundle como uma "caixa" que o sistema Android usa para guardar todos os dados anexados
+              a um evento (a mensagem, a porta, o formato, etc.).*/
             Bundle bundle = intent.getExtras();
             if (bundle != null) {
-                // PDU (Protocol Data Unit) é o formato padrão para SMS
+                /*Os dados reais do SMS são armazenados no Bundle sob a chave "pdus".
+                  Um PDU (Protocol Data Unit) é o formato de dados brutos que a rede de telefonia usa.
+                  É um array porque um SMS longo pode ser fragmentado em várias partes, e cada parte é um PDU.*/
                 Object[] pdus = (Object[]) bundle.get("pdus");
                 if (pdus != null) {
                     StringBuilder fullSms = new StringBuilder();
                     String remetente = "";
 
-                    //O loop itera sobre os PDUs (partes do SMS, se for longo)
-                    // Cada 'pdu' no array 'pdus' é um byte[]
+                    /*O loop percorre cada parte do SMS no array pdus, garantindo que uma mensagem fragmentada seja totalmente capturada.*/
                     for (int i = 0; i < pdus.length; i++) {
-                        // Correto: cria um SmsMessage a partir do byte[]
+
+                        /*Esta é a linha mais importante.
+                          Ela pega o array de bytes bruto (byte[]) do PDU e usa o metodo estático createFromPdu() para decodificá-lo no objeto legível SmsMessage.
+                          O SmsMessage é a classe que o Android usa para representar o SMS.*/
                         SmsMessage smsMessage = SmsMessage.createFromPdu((byte[]) pdus[i]);
+
+                        /*O messageBody decodificado (o texto que você lê) é anexado à StringBuilder (fullSms), reconstruindo o texto completo da mensagem.*/
                         fullSms.append(smsMessage.getMessageBody());
 
-                        // Para o remetente, basta pegar do primeiro SmsMessage
+                        /*O remetente do SMS é sempre o mesmo para todas as partes da mensagem.
+                        Por eficiência, o código só precisa capturar o número do remetente (o displayOriginatingAddress) uma única vez,
+                        na primeira iteração (i = 0).*/
                         if (i == 0) {
                             remetente = smsMessage.getDisplayOriginatingAddress();
                         }
                     }
 
-                    String messageBody = fullSms.toString();
+                    String messageBody = fullSms.toString(); // messagem completa
 
                     Log.d(TAG, "SMS Recebido de: " + remetente);
                     Log.d(TAG, "Corpo da Mensagem: " + messageBody);
 
+                    // Envia para o SmsParserUtil para validar qual o padrão de mensagem foi recebida
                     GastoData gasto = SmsParserUtil.parseSms(remetente, messageBody);
 
                     if (gasto != null) {
@@ -79,7 +92,8 @@ public class SmsReceiver extends BroadcastReceiver {
                         Log.d(TAG, "  SMS Original: " + gasto.getSmsOriginal());
 
                         // Chamar o metodo para enviar para o backend
-                        sendGastoToBackend(gasto);
+
+                        HttpService.sendGastoToBackend(gasto);
 
                     } else {
                         Log.d(TAG, "SMS não corresponde a nenhum padrão conhecido ou erro no parsing: " + messageBody);
@@ -91,34 +105,4 @@ public class SmsReceiver extends BroadcastReceiver {
         }
     }
 
-    private void sendGastoToBackend(GastoData gasto){
-        String json = gson.toJson(gasto);
-        Log.d(TAG, "Enviando JSON para o backend" + json);
-
-        RequestBody body = RequestBody.create(json, MediaType.parse("application/json; charset=utf-8"));
-
-        Request request = new Request.Builder().url(BACKEND_URL)
-                .post(body)
-                .build();
-
-        httpClient.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Log.d(TAG, "Erro ao enviar gasto pata o backend: " + e.getMessage(), e);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                if (response.isSuccessful()){
-                    String responseBody = response.body().string();
-                    Log.d(TAG, "Gasto enviado com sucesso! Resposta do Backend: " + responseBody);
-                }else {
-                    Log.d(TAG, "Falha ao enviar gasto para o backend. Código: " + response.code() +
-                            ", Mensagem: " + response.message() + ", Corpo: " + response.body().string());
-                }
-                response.close();
-            }
-        });
-
-    }
 }

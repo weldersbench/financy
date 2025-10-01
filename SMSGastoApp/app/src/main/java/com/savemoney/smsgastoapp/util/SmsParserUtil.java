@@ -3,6 +3,7 @@ package com.savemoney.smsgastoapp.util;
 import android.util.Log;
 
 import com.savemoney.smsgastoapp.model.GastoData;
+import com.savemoney.smsgastoapp.model.ReceitaData;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -24,14 +25,21 @@ public class SmsParserUtil {
 
     // Padrão 2: Santander Cartão de Crédito
     // Ex: "Santander: Compra de R$ 75,90 em MERCADO X em 20/07/2025 as 15:30h. Cartao final XXXX."
+    // EX: Compra no cartão final 1001, de R$ 54,34, em 21/09/2025, ás 11:36, em AUTO POSTO, aprovada.
     private static final Pattern SANTANDER_CC_PATTERN = Pattern.compile(
-            "Compra de R\\$ ([\\d.,]+) em (.+?) em (\\d{2}/\\d{2}/\\d{4}) as (\\d{2}:\\d{2})h"
+            ".*R\\$ ([\\d,.]+)[^,]+,\\s*em\\s*(\\d{2}/\\d{2}/\\d{4}),\\s*á[s]?\\s*(\\d{2}:\\d{2}),\\s*em\\s*(.+?),\\s*aprovada.*"
     );
 
     // Padrão 3: PIX Recebido
     // Ex: "PIX recebido de FULANO DA SILVA, CPF final XXX. Valor R$ 50,00 em 20/07/2025 as 11:00h."
+    // EX: "PIX enviado em 19/09/2025 as 16:09 no valor de R$ 0,14."
+    // EX: "PIX recebido em 19/09/2025 as 16:09 no valor de R$ 0,14."
     private static final Pattern PIX_RECEBIDO_PATTERN = Pattern.compile(
-            "PIX recebido de (.+?), CPF final \\w+\\. Valor R\\$ ([\\d.,]+) em (\\d{2}/\\d{2}/\\d{4}) as (\\d{2}:\\d{2})h"
+            "PIX recebido em (\\d{2}/\\d{2}/\\d{4}) as (\\d{2}:\\d{2}) no valor de R\\$ ([\\d.,]+)"
+    );
+
+    private static final Pattern PIX_ENVIADO_PATTERN = Pattern.compile(
+            "PIX enviado em (\\d{2}/\\d{2}/\\d{4}) as (\\d{2}:\\d{2}) no valor de R\\$ ([\\d.,]+)"
     );
 
     private static final DateTimeFormatter SMS_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -53,14 +61,25 @@ public class SmsParserUtil {
             }
         }
 
-        // Se não for Santander CC, tentar PIX
-        if (gasto == null) {
-            Matcher pixRecebidoMatcher = PIX_RECEBIDO_PATTERN.matcher(mensageBody);
-            if (pixRecebidoMatcher.find()) {
-                gasto = extractPixRecebido(remetente, mensageBody, pixRecebidoMatcher);
+        if (gasto == null){
+            Matcher pixEnviadoMatcher = PIX_ENVIADO_PATTERN.matcher(mensageBody);
+            if (pixEnviadoMatcher.find()){
+                gasto = extractPixEnviado(remetente, mensageBody, pixEnviadoMatcher);
             }
         }
+
         return gasto; // Retorna o gasto se parseado, ou null se nenhum padrão corresponder
+    }
+
+    public static ReceitaData parseNotification(String remetente, String messageBody){
+        ReceitaData receita = null;
+
+        Matcher pixRecebidoMatcher = PIX_RECEBIDO_PATTERN.matcher(messageBody);
+        if (pixRecebidoMatcher.find()) {
+            receita = extractPixRecebido(remetente, messageBody, pixRecebidoMatcher);
+        }
+
+        return receita;
     }
 
     private static GastoData extractBradescoCc(String remetente, String messageBody, Matcher matcher){
@@ -97,9 +116,9 @@ public class SmsParserUtil {
     private static GastoData extractSantanderCc(String sender, String messageBody, Matcher matcher) {
         try {
             String valorStr = matcher.group(1).replace(",", ".");
-            String estabelecimento = matcher.group(2).trim();
             String dataStr = matcher.group(3);
             String horaStr = matcher.group(4);
+            String estabelecimento = matcher.group(2).trim();
 
             BigDecimal valor = new BigDecimal(valorStr);
             LocalDateTime horaData = LocalDateTime.parse(dataStr + " " + horaStr, SMS_DATE_TIME_FORMATTER);
@@ -111,23 +130,51 @@ public class SmsParserUtil {
         }
     }
 
-    private static GastoData extractPixRecebido(String sender, String messageBody, Matcher matcher) {
+    private static GastoData extractPixEnviado(String sender, String messageBody, Matcher matcher) {
         try {
-            String remetentePix = matcher.group(1).trim();
-            String valorStr = matcher.group(2).replace(",", ".");
-            String dataStr = matcher.group(3);
-            String horaStr = matcher.group(4);
+            String remetentePix = "";
+            String dataStr = matcher.group(1);
+            String horaStr = matcher.group(2);
+            String valorStr = matcher.group(3).replace(",", ".");
+
+            if (valorStr.endsWith(".")){
+                valorStr = valorStr.substring(0, valorStr.length() - 1);
+            }
 
             BigDecimal valor = new BigDecimal(valorStr);
+
             LocalDateTime horaData = LocalDateTime.parse(dataStr + " " + horaStr, SMS_DATE_TIME_FORMATTER);
 
             // Para PIX, o estabelecimento pode ser o nome do remetente
-            String estabelecimento = "PIX de " + remetentePix;
+            String estabelecimento = "SANTANDER " + remetentePix;
 
-            return new GastoData(valor, horaData, estabelecimento, "PIX - Recebido", sender, messageBody);
+            return new GastoData(valor, horaData, estabelecimento, "PIX ", sender, messageBody);
         } catch (Exception e) {
             Log.e(TAG, "Erro ao parsear PIX SMS: " + e.getMessage(), e);
             return null;
+        }
+    }
+
+    /*Parseamento da notificação de recebimento do PIX*/
+    private static ReceitaData extractPixRecebido(String notificacao, String fonteMessage, Matcher matcher){
+        try {
+            String dataStr = matcher.group(1);
+            String hotaStr = matcher.group(2);
+            String valorStr = matcher.group(3).replace(",", ".");
+
+            if (valorStr.endsWith(".")){
+                valorStr = valorStr.substring(0, valorStr.length() -1);
+            }
+
+            BigDecimal valor = new BigDecimal(valorStr);
+            LocalDateTime dataHora = LocalDateTime.parse(dataStr + " " + hotaStr, SMS_DATE_TIME_FORMATTER);
+
+            String descricao = "você acaba de receber um pix!";
+
+            return new ReceitaData(valor, dataHora, descricao, "PIX ", notificacao, fonteMessage);
+        } catch (Exception e) {
+            Log.d(TAG, "Erro ao parsear PIX: " + e.getMessage(), e);
+            return  null;
         }
     }
 }
